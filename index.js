@@ -14,10 +14,10 @@ program
     .option('-n, --line-number', 'shows line number with the lines')
     .option('-v, --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
     .option('-w, --only-word', 'match any word characters after the original pattern')
+    .option('-c, --count', 'print the number of lines matched')
+    .option('-C, --count-all', 'print number of individual matches')
     .action((pattern, filepath, options) => {
-        console.log(options.onlyWord)
         let regex = RegExp(`${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}`, `g${options.insensitive ? 'i': ''}`)
-        console.log(regex.source)
         if (!options.recursive && isDirectory(filepath)) {
             console.error('must add -r flag to check directories')
             process.exitCode = 1
@@ -34,7 +34,7 @@ program
         } else {
             output = findLines(regex, filepath, options.invert != undefined)
         }
-        display(regex, output, options.lineNumber != undefined, options.recursive != undefined)
+        display(regex, output, options.lineNumber != undefined, options.recursive != undefined, options.count != undefined, options.countAll != undefined)
     })
 program
     .command('transfer <pattern> <pathToCheck> <pathToDeposit>')
@@ -86,14 +86,24 @@ function findLines(regex, path, invert = false) {
     }
     return contents.filter(line => regex.test(line[2]))
 }
-function display(regex, arr, lineNumber = false, recursive = false) {
+function display(regex, arr, lineNumber, recursive, count, countAll) {
     if (arr == null) {
         console.log('no matches found')
         return
     }
+    let totalCount = 0
     arr.forEach(entry => {
-        console.log(`${recursive ? chalk.magenta('./' + entry[0]) + ':': ''}${lineNumber ? chalk.greenBright(entry[1]) + ':': ''} ${entry[2].replace(regex, match => chalk.bold.red(match))}`)
+        console.log(`${recursive ? chalk.magenta('./' + entry[0]) + ':': ''}${lineNumber ? chalk.greenBright(entry[1]) + ':': ''} ${entry[2].replace(regex, match => {
+            totalCount++
+            return chalk.bold.red(match)
+        })}`)
     })
+    if (count) {
+        console.log(chalk.whiteBright(arr.length + ' lines matched'))
+    }
+    if (countAll) {
+        console.log(chalk.whiteBright(totalCount + ' individual matches'))
+    }
 
 }
 
@@ -137,14 +147,6 @@ function isDirectory(pathstring) {
     } catch {
         return false
     }
-}
-/**
- * 
- * @param {string[]} arr 
- * @param  {...string} thingsToFilter 
- */
-function clean(arr, ...thingsToFilter) {
-    return arr.filter(val => !thingsToFilter.includes(val))
 }
 
 
