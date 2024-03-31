@@ -13,7 +13,7 @@ program
     .option('-r, --recursive', 'recursively checks the directory and subdirectories for the pattern')
     .option('-n, --line-number', 'shows line number with the lines')
     .option('-v, --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
-    .option('-w, --only-word', 'match any word characters after the original pattern')
+    .option('-w, --only-word', 'matches string only if it is it\'s own word')
     .option('-c, --count', 'print the number of lines matched')
     .option('-C, --count-all', 'print number of individual matches')
     .action((pattern, filepath, options) => {
