@@ -1,6 +1,6 @@
 export {findLines, display, recursiveCheck, read } 
 import { existsSync, readFileSync, readdirSync} from 'fs'
-import path from 'path'
+import path, { join } from 'path'
 import chalk from 'chalk'
 /**
  * 
@@ -25,12 +25,11 @@ function display(regex, arr, lineNumber, recursive, count, countAll) {
     if (arr.length == 0) {
         console.log('no matches found')
     }
-    arr.forEach(entry => {
-        console.log(`${recursive ? chalk.magenta('./' + entry[0]) + ':': ''}${lineNumber ? chalk.greenBright(entry[1]) + ':': ''} ${entry[2].replace(regex, match => {
-            totalCount++
-            return chalk.bold.red(match)
-        })}`)
-    })
+    let output = arr.map(entry => `${recursive ? chalk.magenta('./' + entry[0]) + ':': ''}${lineNumber ? chalk.greenBright(entry[1]) + ':': ''} ${entry[2].replace(regex, match => {
+        totalCount++
+        return chalk.bold.red(match)
+    })}`).join('\n')
+    console.log(output)
     if (count) {
         console.log(chalk.whiteBright(arr.length + ' lines matched'))
     }

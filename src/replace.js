@@ -9,5 +9,5 @@ export function replace(regex, replaceValue, pathstring) {
     } 
     let contents = read(pathstring)
     contents = contents.replace(regex, () => replaceValue)
-    writeFileSync(pathstring, contents)
+    writeFileSync(pathstring, contents) 
 }
