@@ -30,7 +30,7 @@ program
         }
         let output
         if (options.recursive) {
-            output = recursiveCheck(regex, filepath)
+            output = recursiveCheck(regex, filepath, undefined, options.invert != undefined)
         } else {
             output = findLines(regex, filepath, options.invert != undefined)
         }
@@ -79,11 +79,9 @@ program.parse()
  */
 function findLines(regex, path, invert = false) {
     let contents = read(path).split('\n')
-    if (contents.filter(line => regex.test(line)).length == 0) return null
     contents = contents.map((line, index) => [path, index + 1, line])
-    if (invert) {
-        return contents.filter(line => !regex.test(line[2]))
-    }
+    if (invert) return contents.filter(line => line[2].search(regex) == -1)
+    if (contents.filter(line => regex.test(line[2])).length == 0) return null
     return contents.filter(line => regex.test(line[2]))
 }
 function display(regex, arr, lineNumber, recursive, count, countAll) {
