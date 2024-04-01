@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, writeFileSync, lstatSync } from 'fs'
+import { existsSync, writeFileSync, lstatSync } from 'fs'
 import { findLines, display, recursiveCheck, read } from './find.js'
 import { replace } from './replace.js'
 import { program } from 'commander'
