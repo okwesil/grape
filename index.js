@@ -14,10 +14,11 @@ program
     .option('-n, --line-number', 'shows line number with the lines')
     .option('-v, --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
     .option('-w, --only-word', 'matches string only if it is it\'s own word')
+    .option('-l, --only-line', 'only matches the string if it is both the start and end of a line') 
     .option('-c, --count', 'print the number of lines matched')
     .option('-C, --count-all', 'print number of individual matches')
     .action((pattern, filepath, options) => {
-        let regex = RegExp(`${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}`, `g${options.insensitive ? 'i': ''}`)
+        let regex = RegExp(`${options.onlyLine ? '^': ''}${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}${options.onlyLine ? '$': ''}`, `g${options.insensitive ? 'i': ''}${options.onlyLine ? 'm': ''}`)
         if (!options.recursive && isDirectory(filepath)) {
             console.error('must add -r flag to check directories')
             process.exitCode = 1
@@ -90,6 +91,9 @@ function display(regex, arr, lineNumber, recursive, count, countAll) {
         return
     }
     let totalCount = 0
+    if (arr.length == 0) {
+        console.log('no matches found')
+    }
     arr.forEach(entry => {
         console.log(`${recursive ? chalk.magenta('./' + entry[0]) + ':': ''}${lineNumber ? chalk.greenBright(entry[1]) + ':': ''} ${entry[2].replace(regex, match => {
             totalCount++
