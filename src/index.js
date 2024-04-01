@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, writeFileSync, lstatSync } from 'fs'
-import { findLines, display, recursiveCheck } from './find.js'
+import { findLines, display, recursiveCheck, read } from './find.js'
+import { replace } from './replace.js'
 import { program } from 'commander'
+export { isDirectory }
 
 program 
     .name('grape')
@@ -59,10 +61,20 @@ program
         transfer(output, pathToDeposit, options.lineNumber != undefined, options.recursive != undefined)
     })
 program
+    .command('replace <pattern> <replaceValue> <filepath>')
+    .description('replace every pattern match with the "replaceValue" argument')
+    .option('-i --insensitive', 'makes the search, case insensitive (foo == FoO is true) ')
+    .option('-r --recursive', 'recursively checks the directory for the pattern')
+    .option('-v --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
+    .option('-w, --only-word', 'match any word characters after the original pattern')
+    .action((pattern, replaceValue, filepath, options) => replace(RegExp(`${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}`, `g${options.insensitive ? 'i': ''}`), replaceValue, filepath)) 
+
+
+program
     .command('read <filepath>')
     .action(filepath => {
         if (existsSync(filepath)) {
-            console.log(readFileSync(filepath, {encoding: 'ascii'}))
+            console.log(read(filepath))
         } else {
             console.error('file does not exist or cannot be read')
         }
@@ -70,7 +82,6 @@ program
 
 
 program.parse()
-
 
 function transfer(arr, pathToDeposit, lineNumber = false, recursive = false) {
     if (arr == null) {
@@ -82,8 +93,6 @@ function transfer(arr, pathToDeposit, lineNumber = false, recursive = false) {
     writeFileSync(pathToDeposit, str)
 }
 
-
-
 function isDirectory(pathstring) {
     try {
         return lstatSync(pathstring).isDirectory()
@@ -91,5 +100,3 @@ function isDirectory(pathstring) {
         return false
     }
 }
-
-

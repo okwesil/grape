@@ -1,4 +1,4 @@
-export {findLines, display, recursiveCheck} 
+export {findLines, display, recursiveCheck, read } 
 import { existsSync, readFileSync, readdirSync} from 'fs'
 import path from 'path'
 import chalk from 'chalk'
