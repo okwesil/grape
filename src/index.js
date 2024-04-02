@@ -5,6 +5,7 @@ import { replace, recursiveReplace } from './replace.js'
 import PromptSync from 'prompt-sync'
 const confirm = PromptSync({autocomplete: complete(['Yes', 'yes', 'no', 'No'])})
 import { program } from 'commander'
+import chalk from 'chalk'
 export { isDirectory }
 function complete(commands) {
     return function (str) {
@@ -87,7 +88,11 @@ program
                 replaceValue,
                 filepath
             )
-            let answer = confirm('Are you sure you want to replace? [yN]: ')
+            console.log('The data in the following files will be replaced: ')
+            replaced.forEach(file => {
+                console.log(chalk.magentaBright(file.path))
+            })
+            let answer = confirm(`Are you sure? [yN]: `)
             switch(answer) {
                 case 'Yes':
                 case 'yes':
@@ -107,7 +112,6 @@ program
             )
         }
     }) 
-
 
 
 program

@@ -1,9 +1,7 @@
-import { writeFileSync, readdirSync, existsSync } from 'fs'
+import { writeFileSync, readdirSync } from 'fs'
 import { read } from './find.js'
 import path from 'path'
 import { isDirectory } from './index.js'
-import os from 'os'
-const lastreplace = path.join(os.homedir(), 'lastreplace.json')
 export function replace(regex, replaceValue, pathstring) {
     if (isDirectory(pathstring)) {
         console.log('can not recursively replace')
@@ -12,9 +10,9 @@ export function replace(regex, replaceValue, pathstring) {
     } 
     let contents = read(pathstring)
     contents = contents.replace(regex, () => replaceValue)
-    save(pathstring)
     writeFileSync(pathstring, contents) 
 }
+ 
 export function recursiveReplace(regex, replaceValue, pathstring, checked = [], start = true) {
     let data = []
     if (start && !isDirectory(pathstring)) {
@@ -33,14 +31,4 @@ export function recursiveReplace(regex, replaceValue, pathstring, checked = [], 
     }
     return data
 }
-function save(pathstring) {
-    writeFileSync(lastreplace, JSON.stringify({path: path.join(process.cwd(), pathstring), data: read(pathstring)}, null, 2))
-}
-function load(path) {
-    if (!existsSync(lastreplace)) {
-        console.error('no saved replaces')
-        process.exitCode = 1
-    }
-    let lastrepalceObj = JSON.parse(read(lastreplace))
-    writeFileSync(lastrepalceObj.path, lastrepalceObj.data)
-}
+

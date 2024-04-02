@@ -1,6 +1,6 @@
 {
   "name": "grape",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Essentially grep on linux as a package",
   "main": "index.js",
   "type": "module",
