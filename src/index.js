@@ -75,7 +75,7 @@ program
     })
 program
     .command('replace <pattern> <replaceValue> <filepath>')
-    .description('replace every pattern match with the "replaceValue" argument')
+    .description('replace every <pattern> match with the <replaceValue> argument')
     .option('-i --insensitive', 'makes the search, case insensitive (foo == FoO is true) ')
     .option('-r --recursive', 'recursively checks the directory for the pattern')
     .option('-v --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
@@ -109,14 +109,22 @@ program
     }) 
 
 
+
 program
     .command('read <filepath>')
+    .description('reads and prints the full contents of the file at the <filepath> argument, could be used to check recently replaced file')
     .action(filepath => {
-        if (existsSync(filepath)) {
-            console.log(read(filepath))
-        } else {
-            console.error('file does not exist or cannot be read')
+        if (!existsSync(filepath)) {
+            console.error(`${filepath} does not exist`)
+            process.exitCode = 1
+            return
         }
+        if (isDirectory(filepath)) {
+            console.error(`${filepath} is a directory`)
+            process.exitCode = 1
+            return
+        }
+        console.log(read(filepath))
     })
 
 
