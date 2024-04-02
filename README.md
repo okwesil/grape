@@ -3,10 +3,18 @@
 <br>
 The functionality of the `grep` linux command made in node.js with replace
 <br>
+
+## Install 
+You can install globally with: 
+  ` npm install -g grape-cli `
+
+
+## Usage
+
 You can use: 
 
   + `grape find "pattern" <filepath>` to print all the lines that contain a match
   + `grape transfer "pattern" <pathToCheck> <pathToDeposit> ` to transfers all the lines with a match in `<pathToCheck>` to `<pathToDeposit>`
-  + `grape replace "pattern" <replaceValue> <filepath>`
+  + `grape replace "pattern" "replaceValue" <filepath>` to replace all matches of `"pattern"` with `"replaceValue"`
+  + `grape read <filepath> ` to print the entire contents of a file
     <br>
-**btw** it does not have to be in quotes
