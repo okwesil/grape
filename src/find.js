@@ -8,7 +8,13 @@ import chalk from 'chalk'
  * @param {string} path 
  */
 
-const read = path => readFileSync(path, {encoding: 'utf8'})
+const read = path => {
+    try {
+        return readFileSync(path, {encoding: 'utf8'})
+    } catch {
+        return ''
+    }
+}
 function findLines(regex, path, invert = false) {
     let contents = read(path).split('\n')
     contents = contents.map((line, index) => [path, index + 1, line])
