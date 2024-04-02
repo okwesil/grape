@@ -1,9 +1,22 @@
 #!/usr/bin/env node
 import { existsSync, writeFileSync, lstatSync } from 'fs'
 import { findLines, display, recursiveCheck, read } from './find.js'
-import { replace } from './replace.js'
+import { replace, recursiveReplace } from './replace.js'
+import PromptSync from 'prompt-sync'
+const confirm = PromptSync({autocomplete: complete(['Yes', 'yes', 'no', 'No'])})
 import { program } from 'commander'
 export { isDirectory }
+function complete(commands) {
+    return function (str) {
+      var i;
+      var ret = [];
+      for (i=0; i< commands.length; i++) {
+        if (commands[i].indexOf(str) == 0)
+          ret.push(commands[i]);
+      }
+      return ret;
+    };
+  };
 
 program 
     .name('grape')
@@ -67,7 +80,33 @@ program
     .option('-r --recursive', 'recursively checks the directory for the pattern')
     .option('-v --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
     .option('-w, --only-word', 'match any word characters after the original pattern')
-    .action((pattern, replaceValue, filepath, options) => replace(RegExp(`${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}`, `g${options.insensitive ? 'i': ''}`), replaceValue, filepath)) 
+    .action((pattern, replaceValue, filepath, options) => {
+        if (options.recursive) {
+            let replaced = recursiveReplace(
+                RegExp(`${options.onlyLine ? '^': ''}${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}${options.onlyLine ? '$': ''}`, `g${options.insensitive ? 'i': ''}${options.onlyLine ? 'm': ''}`),
+                replaceValue,
+                filepath
+            )
+            let answer = confirm('Are you sure you want to replace? [yN]: ')
+            switch(answer) {
+                case 'Yes':
+                case 'yes':
+                case 'YES':
+                    break
+                default:
+                    return
+            }
+            for (const file of replaced) {
+                writeFileSync(file.path, file.data)
+            }
+        } else {
+            replace(
+                RegExp(`${options.onlyLine ? '^': ''}${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}${options.onlyLine ? '$': ''}`, `g${options.insensitive ? 'i': ''}${options.onlyLine ? 'm': ''}`),
+                replaceValue,
+                filepath
+            )
+        }
+    }) 
 
 
 program
