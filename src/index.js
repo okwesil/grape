@@ -2,7 +2,8 @@
 import { existsSync, writeFileSync, lstatSync } from 'fs'
 import { findLines, display, recursiveCheck, read } from './find.js'
 import { replace, recursiveReplace, retrieveSaved, save, saveFile } from './replace.js'
-import { confirm, select} from '@inquirer/prompts'
+import confirm from '@inquirer/confirm'
+import select from '@inquirer/select'
 import { program } from 'commander'
 import chalk from 'chalk'
 export { isDirectory }
