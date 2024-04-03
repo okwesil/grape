@@ -124,7 +124,19 @@ program
             writeFileSync(fileToRevert, saved[fileToRevert].toString())
             delete saved[fileToRevert]
             writeFileSync(saveFile, JSON.stringify(saved, null, 2))
-        } 
+            return
+        }
+        const matchedPaths = Object.keys(saved).filter(filepath => filepath.search(filename) != -1)
+        const fileToRevert = await select({message: 'Choose the file to revert: ', choices: matchedPaths.map(filepath => {
+            return {
+                name: filepath,
+                value: filepath
+            }
+        })})
+        writeFileSync(fileToRevert, saved[fileToRevert])
+        delete saved[fileToRevert]
+        writeFileSync(saveFile, JSON.stringify(saved, null, 2))
+
     })
 
 program
