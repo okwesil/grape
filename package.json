@@ -1,6 +1,6 @@
 {
   "name": "grape-regexp",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Essentially grep on linux as a package",
   "main": "index.js",
   "type": "module",
