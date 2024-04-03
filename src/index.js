@@ -1,25 +1,14 @@
 #!/usr/bin/env node
 import { existsSync, writeFileSync, lstatSync } from 'fs'
 import { findLines, display, recursiveCheck, read } from './find.js'
-import { replace, recursiveReplace } from './replace.js'
-import PromptSync from 'prompt-sync'
-const confirm = PromptSync({autocomplete: complete(['Yes', 'yes', 'no', 'No'])})
+import { replace, recursiveReplace, retrieveSaved, save, saveFile } from './replace.js'
+import { confirm, select} from '@inquirer/prompts'
 import { program } from 'commander'
 import chalk from 'chalk'
 export { isDirectory }
-function complete(commands) {
-    return function (str) {
-      var i;
-      var ret = [];
-      for (i=0; i< commands.length; i++) {
-        if (commands[i].indexOf(str) == 0)
-          ret.push(commands[i]);
-      }
-      return ret;
-    };
-  };
 
-program 
+
+program
     .name('grape')
     .command('find <pattern> <filepath>')
     .description('find the given pattern in file')
@@ -81,7 +70,7 @@ program
     .option('-r --recursive', 'recursively checks the directory for the pattern')
     .option('-v --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
     .option('-w, --only-word', 'match any word characters after the original pattern')
-    .action((pattern, replaceValue, filepath, options) => {
+    .action(async (pattern, replaceValue, filepath, options) => {
         if (options.recursive) {
             let replaced = recursiveReplace(
                 RegExp(`${options.onlyLine ? '^': ''}${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}${options.onlyLine ? '$': ''}`, `g${options.insensitive ? 'i': ''}${options.onlyLine ? 'm': ''}`),
@@ -89,21 +78,24 @@ program
                 filepath
             )
             console.log('The data in the following files will be replaced: ')
-            replaced.forEach(file => {
-                console.log(chalk.magentaBright(file.path))
-            })
-            let answer = confirm(`Are you sure? [yN]: `)
-            switch(answer) {
-                case 'Yes':
-                case 'yes':
-                case 'YES':
-                    break
-                default:
-                    return
+            const MAX_DISPLAY = 10
+            if (replaced.length <= MAX_DISPLAY) {
+                replaced.forEach(file => {
+                    console.log(chalk.magentaBright(file.path))
+                })
+            } else {
+                console.log(`You will be replacing ${chalk.magentaBright(replaced.length)} files`)
+            }
+            let answer = await confirm({message: 'Do you want to replace', default: false})
+            if (!answer) {
+                console.log('cancelled replace')
+                return
             }
             for (const file of replaced) {
+                save(file.path)
                 writeFileSync(file.path, file.data)
             }
+            console.log('files have been replaced')
         } else {
             replace(
                 RegExp(`${options.onlyLine ? '^': ''}${options.onlyWord ? `\\b`: ''}${pattern}${options.onlyWord ? `\\b`: ''}${options.onlyLine ? '$': ''}`, `g${options.insensitive ? 'i': ''}${options.onlyLine ? 'm': ''}`),
@@ -112,7 +104,27 @@ program
             )
         }
     }) 
-
+program
+    .command('revert [filename]')
+    .action(async (filename) => {
+        let saved = retrieveSaved()
+        if (Object.keys(saved).length == 0) {
+            console.error('nothing saved')
+            process.exitCode = 1
+            return
+        }
+        if (filename == undefined) {
+            const fileToRevert = await select({message: 'Choose the file to revert: ', choices: Object.keys(saved).map(filepath => {
+                return {
+                    name: filepath,
+                    value: filepath
+                }
+            })})
+            writeFileSync(fileToRevert, saved[fileToRevert].toString())
+            delete saved[fileToRevert]
+            writeFileSync(saveFile, JSON.stringify(saved, null, 2))
+        } 
+    })
 
 program
     .command('read <filepath>')
