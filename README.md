@@ -6,7 +6,7 @@ The functionality of the `grep` linux command made in node.js with replace
 
 ## Install 
 You can install globally with: 
-  ` npm install -g grape-cli `
+  ` npm install -g grape-regexp `
 
 
 ## Usage
