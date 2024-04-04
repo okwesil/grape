@@ -4,12 +4,10 @@
   "description": "Essentially grep on linux as a package",
   "main": "index.js",
   "type": "module",
-  "preferGlobal": true,
   "bin": {
     "grape": "src/index.js"
   },
   "scripts": {
-    "preinstall": "echo 'This package is best installed globally'",
     "test": "echo test"
   },
   "keywords": [
