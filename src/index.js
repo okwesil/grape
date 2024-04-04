@@ -107,6 +107,7 @@ program
     }) 
 program
     .command('revert [filename]')
+    .description('if [filename] is not provided then grape will show a list of all replace saves from you to choose from and manually revert. If [filename] is provided then grape show a list of all saves that contain the filename inputted')
     .action(async (filename) => {
         let saved = retrieveSaved()
         if (Object.keys(saved).length == 0) {
