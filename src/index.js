@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import { existsSync, writeFileSync, lstatSync, rmSync } from 'fs'
+import { existsSync, writeFileSync, lstatSync } from 'fs'
 import { findLines, display, recursiveCheck, read } from './find.js'
 import { replace, recursiveReplace, retrieveSaved, save, saveFile } from './replace.js'
 import confirm from '@inquirer/confirm'
-import checkbox from '@inquirer/checkbox'
+import select from '@inquirer/select'
 import { program } from 'commander'
 import chalk from 'chalk'
 export { isDirectory }
@@ -71,7 +71,6 @@ program
     .option('-r --recursive', 'recursively checks the directory for the pattern')
     .option('-v --invert', 'invert the search pattern to show everything that doesn\'t contain the pattern')
     .option('-w, --only-word', 'match any word characters after the original pattern')
-    .option('-h, --ignore-hidden', 'replace every file that is not hidden (dot prefixed on linux)')
     .action(async (pattern, replaceValue, filepath, options) => {
         if (options.recursive) {
             let replaced = recursiveReplace(
@@ -79,14 +78,14 @@ program
                 replaceValue,
                 filepath
             )
+            console.log('The data in the following files will be replaced: ')
             const MAX_DISPLAY = 10
             if (replaced.length <= MAX_DISPLAY) {
-                console.log('The data in the following files may be altered: ')       
                 replaced.forEach(file => {
                     console.log(chalk.magentaBright(file.path))
                 })
             } else {
-                console.log(`${chalk.magentaBright(replaced.length)} files may be altered`)
+                console.log(`You will be replacing ${chalk.magentaBright(replaced.length)} files`)
             }
             let answer = await confirm({message: 'Do you want to replace', default: false})
             if (!answer) {
@@ -116,40 +115,29 @@ program
             process.exitCode = 1
             return
         }
-        let filesToRevert
         if (filename == undefined) {
-            filesToRevert = await checkbox({message: 'Choose the file to revert: ', choices: Object.keys(saved).map(filepath => {
+            const fileToRevert = await select({message: 'Choose the file to revert: ', choices: Object.keys(saved).map(filepath => {
                 return {
                     name: filepath,
                     value: filepath
                 }
             })})
-        } else {
-            const matchedPaths = Object.keys(saved).filter(filepath => filepath.search(filename) != -1)
-            filesToRevert = await checkbox({message: 'Choose the file to revert: ', choices: matchedPaths.map(filepath => {
-                return {
-                    name: filepath,
-                    value: filepath
-                }
-            })})
-        }
-
-        for (const file of filesToRevert) {
-            writeFileSync(file, saved[file].toString())
-            delete saved[file]
-        }
-        writeFileSync(saveFile, JSON.stringify(saved, null, 2))
-        return
-    })
-
-program 
-    .command('clear') 
-    .action(() => {
-        if (!existsSync(saveFile)) {
-            console.error('nothing to clear') 
+            writeFileSync(fileToRevert, saved[fileToRevert].toString())
+            delete saved[fileToRevert]
+            writeFileSync(saveFile, JSON.stringify(saved, null, 2))
             return
         }
-        rmSync(saveFile)
+        const matchedPaths = Object.keys(saved).filter(filepath => filepath.search(filename) != -1)
+        const fileToRevert = await select({message: 'Choose the file to revert: ', choices: matchedPaths.map(filepath => {
+            return {
+                name: filepath,
+                value: filepath
+            }
+        })})
+        writeFileSync(fileToRevert, saved[fileToRevert])
+        delete saved[fileToRevert]
+        writeFileSync(saveFile, JSON.stringify(saved, null, 2))
+
     })
 
 program
